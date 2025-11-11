@@ -15,6 +15,7 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isLoadingCamera, setIsLoadingCamera] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -25,21 +26,30 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
   }, [stream]);
 
   const startCamera = async () => {
+    setIsLoadingCamera(true);
     try {
       // First check if mediaDevices is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         toast.error("Seu navegador não suporta acesso à câmera. Use o upload de imagem.");
+        setIsLoadingCamera(false);
         return;
       }
 
+      console.log("Solicitando acesso à câmera...");
+      toast.info("Solicitando acesso à câmera...");
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: 640, height: 480 },
       });
       
+      console.log("Câmera acessada com sucesso!");
+      
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        await videoRef.current.play();
         setStream(mediaStream);
         setIsCameraActive(true);
+        toast.success("Câmera ativada!");
       }
     } catch (error: any) {
       console.error("Error accessing camera:", error);
@@ -53,6 +63,8 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
       } else {
         toast.error("Erro ao acessar a câmera. Tente o upload de imagem.");
       }
+    } finally {
+      setIsLoadingCamera(false);
     }
   };
 
@@ -104,19 +116,28 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
             <Button
               onClick={startCamera}
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || isLoadingCamera}
               size="lg"
               className="bg-gradient-primary shadow-glow hover:scale-105 transition-transform"
             >
-              <Camera className="mr-2 h-5 w-5" />
-              Ativar Câmera
+              {isLoadingCamera ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Abrindo câmera...
+                </>
+              ) : (
+                <>
+                  <Camera className="mr-2 h-5 w-5" />
+                  Ativar Câmera
+                </>
+              )}
             </Button>
             
             <div className="text-muted-foreground text-sm">ou</div>
             
             <label htmlFor="file-upload">
               <Button
-                disabled={isAnalyzing}
+                disabled={isAnalyzing || isLoadingCamera}
                 size="lg"
                 variant="secondary"
                 className="cursor-pointer"
