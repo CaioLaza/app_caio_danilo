@@ -124,13 +124,13 @@ serve(async (req) => {
 
 function getSuggestionPrompt(emotion: string): string {
   const prompts: Record<string, string> = {
-    feliz: "A pessoa está feliz! Sugira uma música animada e alegre OU escreva um pequeno poema celebrando esse momento de felicidade. Seja criativo e positivo!",
-    triste: "A pessoa está triste. Sugira uma música reconfortante e calma OU escreva um poema inspirador que traga esperança e conforto. Seja empático e gentil.",
-    neutro: "A pessoa está com emoção neutra. Sugira uma música agradável e relaxante OU escreva um poema curto sobre apreciar os pequenos momentos. Seja tranquilo e positivo.",
-    ansioso: "A pessoa parece ansiosa. Sugira uma música calma e meditativa OU escreva um poema sobre respirar fundo e encontrar paz interior. Seja reconfortante.",
-    entusiasmado: "A pessoa está entusiasmada! Sugira uma música energética e motivadora OU escreva um poema sobre perseguir sonhos e aproveitar a energia. Seja empolgante!",
-    cansado: "A pessoa parece cansada. Sugira uma música suave e relaxante OU escreva um poema sobre descanso e renovação. Seja gentil e reconfortante.",
-    reflexivo: "A pessoa parece reflexiva. Sugira uma música contemplativa OU escreva um poema sobre introspecção e crescimento pessoal. Seja profundo mas esperançoso.",
+    feliz: "A pessoa está feliz. Sugira uma música animada que combine com esse sentimento de alegria e energia positiva. **IMPORTANTE**: Você DEVE incluir um link do YouTube para a música no formato: [Nome da Música - Artista](link_do_youtube). Formate sua resposta em markdown com **negrito** para destacar partes importantes.",
+    triste: "A pessoa está triste. Crie um poema curto e reconfortante que traga esperança e conforto para esse momento difícil. Use **negrito** para destacar as palavras-chave mais importantes do poema.",
+    neutro: "A pessoa está com uma expressão neutra. Sugira uma música relaxante e agradável para melhorar o humor. **IMPORTANTE**: Você DEVE incluir um link do YouTube para a música no formato: [Nome da Música - Artista](link_do_youtube). Formate sua resposta em markdown com **negrito** para destacar partes importantes.",
+    ansioso: "A pessoa parece ansiosa. Crie um poema curto que traga calma e serenidade, ajudando a acalmar a mente. Use **negrito** para destacar as palavras-chave mais importantes do poema.",
+    entusiasmado: "A pessoa está entusiasmada! Sugira uma música empolgante que amplifique essa energia positiva. **IMPORTANTE**: Você DEVE incluir um link do YouTube para a música no formato: [Nome da Música - Artista](link_do_youtube). Formate sua resposta em markdown com **negrito** para destacar partes importantes.",
+    cansado: "A pessoa parece cansada. Sugira uma música suave e relaxante para ajudar no descanso. **IMPORTANTE**: Você DEVE incluir um link do YouTube para a música no formato: [Nome da Música - Artista](link_do_youtube). Formate sua resposta em markdown com **negrito** para destacar partes importantes.",
+    reflexivo: "A pessoa está em um momento reflexivo. Crie um poema inspirador que estimule a introspecção e o autoconhecimento. Use **negrito** para destacar as palavras-chave mais importantes do poema.",
   };
 
   return prompts[emotion] || prompts.neutro;

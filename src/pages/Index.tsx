@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { CameraCapture } from "@/components/CameraCapture";
 import { EmotionResult } from "@/components/EmotionResult";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Sparkles, RefreshCw, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Session } from "@supabase/supabase-js";
 
 interface AnalysisResult {
   emotion: string;
@@ -12,9 +14,30 @@ interface AnalysisResult {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleCapture = async (imageData: string) => {
     setIsAnalyzing(true);
@@ -43,9 +66,33 @@ const Index = () => {
     setCapturedImage(null);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logout realizado com sucesso!");
+    navigate("/auth");
+  };
+
+  if (!session) {
+    return null;
+  }
+
+  const isAnonymous = session.user.is_anonymous;
+
   return (
     <div className="min-h-screen bg-gradient-bg">
       <div className="container max-w-2xl mx-auto px-4 py-12">
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            {isAnonymous ? "Sair do Demo" : "Sair"}
+          </Button>
+        </div>
+        
         <div className="text-center mb-12 space-y-4">
           <div className="inline-block">
             <Sparkles className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />

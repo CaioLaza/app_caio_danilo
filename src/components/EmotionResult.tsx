@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
-import { Sparkles, Music, BookOpen } from "lucide-react";
+import { Sparkles, Music, BookOpen, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EmotionResultProps {
   emotion: string;
@@ -30,6 +31,14 @@ const emotionColors: Record<string, string> = {
 export const EmotionResult = ({ emotion, suggestion, capturedImage }: EmotionResultProps) => {
   const emoji = emotionEmojis[emotion] || "🙂";
   const colorGradient = emotionColors[emotion] || "from-primary to-secondary";
+  
+  // Extract YouTube link from markdown format
+  const youtubeLinkMatch = suggestion.match(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/);
+  const youtubeLink = youtubeLinkMatch ? youtubeLinkMatch[2] : null;
+  const youtubeLinkText = youtubeLinkMatch ? youtubeLinkMatch[1] : null;
+  
+  // Remove the link from suggestion for display
+  const cleanSuggestion = suggestion.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '');
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-700">
@@ -60,10 +69,29 @@ export const EmotionResult = ({ emotion, suggestion, capturedImage }: EmotionRes
           </div>
           
           <div className="prose prose-sm max-w-none">
-            <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">
-              {suggestion}
-            </p>
+            <div 
+              className="text-foreground/80 leading-relaxed whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{ 
+                __html: cleanSuggestion
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\n/g, '<br />')
+              }}
+            />
           </div>
+
+          {youtubeLink && (
+            <div className="pt-4">
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => window.open(youtubeLink, '_blank')}
+              >
+                <Music className="h-4 w-4" />
+                Ouvir: {youtubeLinkText}
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
           <div className="flex gap-2 pt-4">
             {suggestion.toLowerCase().includes("música") && (
