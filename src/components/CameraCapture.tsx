@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect } from "react";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface CameraCaptureProps {
   onCapture: (imageData: string) => void;
@@ -25,6 +26,12 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
 
   const startCamera = async () => {
     try {
+      // First check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error("Seu navegador não suporta acesso à câmera. Use o upload de imagem.");
+        return;
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: 640, height: 480 },
       });
@@ -34,10 +41,36 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
         setStream(mediaStream);
         setIsCameraActive(true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error accessing camera:", error);
-      toast.error("Não foi possível acessar a câmera. Verifique as permissões.");
+      
+      if (error.name === "NotReadableError") {
+        toast.error("Câmera em uso por outro aplicativo. Feche outros apps que usam a câmera ou use o upload de imagem.");
+      } else if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        toast.error("Permissão negada. Permita o acesso à câmera nas configurações do navegador ou use o upload de imagem.");
+      } else if (error.name === "NotFoundError") {
+        toast.error("Nenhuma câmera encontrada. Use o upload de imagem.");
+      } else {
+        toast.error("Erro ao acessar a câmera. Tente o upload de imagem.");
+      }
     }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, selecione uma imagem válida.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageData = e.target?.result as string;
+      onCapture(imageData);
+    };
+    reader.readAsDataURL(file);
   };
 
   const capturePhoto = () => {
@@ -68,7 +101,7 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
     <Card className="overflow-hidden shadow-soft border-primary/20">
       <div className="relative aspect-video bg-muted">
         {!isCameraActive ? (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
             <Button
               onClick={startCamera}
               disabled={isAnalyzing}
@@ -78,6 +111,31 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
               <Camera className="mr-2 h-5 w-5" />
               Ativar Câmera
             </Button>
+            
+            <div className="text-muted-foreground text-sm">ou</div>
+            
+            <label htmlFor="file-upload">
+              <Button
+                disabled={isAnalyzing}
+                size="lg"
+                variant="secondary"
+                className="cursor-pointer"
+                asChild
+              >
+                <div>
+                  <Upload className="mr-2 h-5 w-5" />
+                  Enviar Foto
+                </div>
+              </Button>
+            </label>
+            <Input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              disabled={isAnalyzing}
+              className="hidden"
+            />
           </div>
         ) : (
           <>
