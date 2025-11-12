@@ -44,20 +44,37 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
       });
       
       console.log("Câmera acessada com sucesso!");
+      console.log("Stream ativo:", mediaStream.active);
+      console.log("Video tracks:", mediaStream.getVideoTracks().length);
       
       if (videoRef.current) {
+        console.log("Configurando srcObject do vídeo...");
         videoRef.current.srcObject = mediaStream;
         
         // Wait for video metadata to load
-        videoRef.current.onloadedmetadata = () => {
-          console.log("Vídeo carregado e pronto!");
-          setIsVideoReady(true);
-          toast.success("Câmera ativada!");
+        videoRef.current.onloadedmetadata = async () => {
+          console.log("Metadata carregada!");
+          console.log("Dimensões do vídeo:", videoRef.current?.videoWidth, "x", videoRef.current?.videoHeight);
+          
+          try {
+            await videoRef.current?.play();
+            console.log("Vídeo iniciado com sucesso!");
+            setIsVideoReady(true);
+            setStream(mediaStream);
+            setIsCameraActive(true);
+            toast.success("Câmera ativada!");
+          } catch (playError) {
+            console.error("Erro ao iniciar reprodução do vídeo:", playError);
+            toast.error("Erro ao iniciar vídeo da câmera");
+          }
         };
         
-        await videoRef.current.play();
-        setStream(mediaStream);
-        setIsCameraActive(true);
+        videoRef.current.onerror = (error) => {
+          console.error("Erro no elemento de vídeo:", error);
+          toast.error("Erro ao carregar vídeo da câmera");
+        };
+      } else {
+        console.error("videoRef.current não disponível!");
       }
     } catch (error: any) {
       console.error("Error accessing camera:", error);
