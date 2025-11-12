@@ -16,6 +16,7 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isLoadingCamera, setIsLoadingCamera] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -46,10 +47,17 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        
+        // Wait for video metadata to load
+        videoRef.current.onloadedmetadata = () => {
+          console.log("Vídeo carregado e pronto!");
+          setIsVideoReady(true);
+          toast.success("Câmera ativada!");
+        };
+        
         await videoRef.current.play();
         setStream(mediaStream);
         setIsCameraActive(true);
-        toast.success("Câmera ativada!");
       }
     } catch (error: any) {
       console.error("Error accessing camera:", error);
@@ -86,25 +94,45 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
   };
 
   const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    console.log("Tentando capturar foto...");
+    
+    if (!videoRef.current || !canvasRef.current) {
+      console.error("Refs não disponíveis");
+      toast.error("Erro ao acessar a câmera");
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      console.error("Vídeo sem dimensões:", video.videoWidth, video.videoHeight);
+      toast.error("Aguarde o vídeo carregar completamente");
+      return;
+    }
+    
     const context = canvas.getContext("2d");
+    if (!context) {
+      console.error("Contexto do canvas não disponível");
+      return;
+    }
 
-    if (!context) return;
-
+    console.log("Capturando com dimensões:", video.videoWidth, "x", video.videoHeight);
+    
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
 
     const imageData = canvas.toDataURL("image/jpeg", 0.8);
+    console.log("Foto capturada! Tamanho:", imageData.length);
+    
     onCapture(imageData);
 
     // Stop camera after capture
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
       setIsCameraActive(false);
+      setIsVideoReady(false);
       setStream(null);
     }
   };
@@ -170,7 +198,7 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
             <div className="absolute bottom-4 left-0 right-0 flex justify-center">
               <Button
                 onClick={capturePhoto}
-                disabled={isAnalyzing}
+                disabled={isAnalyzing || !isVideoReady}
                 size="lg"
                 className="bg-gradient-accent shadow-glow hover:scale-105 transition-transform"
               >
@@ -178,6 +206,11 @@ export const CameraCapture = ({ onCapture, isAnalyzing }: CameraCaptureProps) =>
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Analisando...
+                  </>
+                ) : !isVideoReady ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Carregando...
                   </>
                 ) : (
                   <>
