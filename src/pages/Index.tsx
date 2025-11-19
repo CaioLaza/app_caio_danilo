@@ -31,8 +31,18 @@ const Index = () => {
       toast.success("Análise concluída!");
     } catch (error) {
       console.error("Error analyzing emotion:", error);
-      toast.error("Erro ao analisar a emoção. Tente novamente.");
-      setCapturedImage(null);
+      toast.warning(
+        "Não foi possível falar com o servidor agora. Usando modo demonstração offline."
+      );
+
+      // Fallback simples em modo demo/local, sem IA real
+      const fallback: AnalysisResult = {
+        emotion: "neutro",
+        suggestion:
+          "Não conseguimos analisar sua foto agora, mas aqui vai uma sugestão: **ouça uma música calma** que você gosta e faça uma pausa de 5 minutos para respirar fundo.",
+      };
+
+      setResult(fallback);
     } finally {
       setIsAnalyzing(false);
     }
