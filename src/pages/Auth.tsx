@@ -34,8 +34,8 @@ export default function Auth() {
 
   const handleDemoMode = async () => {
     setIsLoading(true);
-    const demoEmail = "demo@moodanalyzer.com";
-    const demoPassword = "demo123456";
+    const demoEmail = "caio@gmail.com";
+    const demoPassword = "caio1234";
     
     try {
       // Tenta fazer login
@@ -111,100 +111,132 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-bg p-4">
-      <Card className="w-full max-w-md p-8 space-y-6 shadow-glow">
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-gradient-primary">
-              <Sparkles className="h-8 w-8 text-white" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8 space-y-3">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-primary blur-xl opacity-50 rounded-full" />
+              <div className="relative p-4 rounded-2xl bg-gradient-primary shadow-glow">
+                <Sparkles className="h-10 w-10 text-white" />
+              </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Análise de Humor
           </h1>
-          <p className="text-muted-foreground">
-            {isLogin ? "Entre na sua conta" : "Crie sua conta"}
+          <p className="text-muted-foreground text-lg">
+            Descubra seu estado emocional através da IA
           </p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-              minLength={6}
-            />
-          </div>
-
+        {/* Main Card */}
+        <Card className="p-8 space-y-6 shadow-glow border-primary/10 backdrop-blur-sm bg-card/95">
+          {/* Quick Access Button */}
           <Button
-            type="submit"
-            className="w-full bg-gradient-primary"
+            variant="outline"
+            className="w-full h-14 text-base font-medium border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all"
+            onClick={handleDemoMode}
             disabled={isLoading}
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processando...
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Entrando...
               </>
-            ) : isLogin ? (
-              "Entrar"
             ) : (
-              "Criar Conta"
+              <>
+                <User className="mr-2 h-5 w-5" />
+                Acesso Rápido
+              </>
             )}
           </Button>
-        </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/50" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-3 text-muted-foreground font-medium">
+                ou use sua conta
+              </span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">ou</span>
+
+          {/* Login Form */}
+          <form onSubmit={handleAuth} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                className="h-11"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                Senha
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+                minLength={6}
+                className="h-11"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 bg-gradient-primary text-white font-medium text-base shadow-lg hover:shadow-glow transition-all"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Processando...
+                </>
+              ) : isLogin ? (
+                "Entrar"
+              ) : (
+                "Criar Conta"
+              )}
+            </Button>
+          </form>
+
+          {/* Toggle Login/Signup */}
+          <div className="text-center pt-2">
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm text-primary hover:underline font-medium transition-colors"
+              disabled={isLoading}
+            >
+              {isLogin
+                ? "Não tem uma conta? Criar conta"
+                : "Já tem uma conta? Entrar"}
+            </button>
           </div>
-        </div>
+        </Card>
 
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleDemoMode}
-          disabled={isLoading}
-        >
-          <User className="mr-2 h-4 w-4" />
-          Login de Teste
-        </Button>
-
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
-            disabled={isLoading}
-          >
-            {isLogin
-              ? "Não tem uma conta? Criar conta"
-              : "Já tem uma conta? Entrar"}
-          </button>
-        </div>
-      </Card>
+        {/* Footer */}
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Sua privacidade e dados estão protegidos
+        </p>
+      </div>
     </div>
   );
 }
