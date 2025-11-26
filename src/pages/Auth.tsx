@@ -34,10 +34,43 @@ export default function Auth() {
 
   const handleDemoMode = async () => {
     setIsLoading(true);
+    const demoEmail = "demo@moodanalyzer.com";
+    const demoPassword = "demo123456";
+    
     try {
-      const { error } = await supabase.auth.signInAnonymously();
-      if (error) throw error;
-      toast.success("Modo demonstração ativado!");
+      // Tenta fazer login
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: demoEmail,
+        password: demoPassword,
+      });
+      
+      // Se o login falhar (usuário não existe), cria a conta
+      if (signInError) {
+        const redirectUrl = `${window.location.origin}/`;
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: demoEmail,
+          password: demoPassword,
+          options: {
+            emailRedirectTo: redirectUrl,
+          },
+        });
+        
+        if (signUpError) throw signUpError;
+        
+        toast.success("Conta demo criada! Fazendo login...");
+        
+        // Aguarda um pouco e tenta login novamente
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const { error: retryError } = await supabase.auth.signInWithPassword({
+          email: demoEmail,
+          password: demoPassword,
+        });
+        
+        if (retryError) throw retryError;
+      }
+      
+      toast.success("Login de teste realizado!");
       navigate("/");
     } catch (error: any) {
       toast.error(error.message || "Erro ao entrar no modo demonstração");
@@ -156,7 +189,7 @@ export default function Auth() {
           disabled={isLoading}
         >
           <User className="mr-2 h-4 w-4" />
-          Entrar no Modo Demonstração
+          Login de Teste
         </Button>
 
         <div className="text-center">
